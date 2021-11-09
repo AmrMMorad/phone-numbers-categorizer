@@ -6,10 +6,11 @@ import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 
  
-import java.util.List;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/customer")
@@ -20,7 +21,7 @@ public class CustomerController {
     private CustomerService service;
 
     @GetMapping
-    public Iterable<Customer> getAll() {
-        return service.getAll();
+    public Iterable<Customer> getAll(@RequestParam(defaultValue = "false") Boolean validPhoneNumbersOnly) {
+        return service.getAll(validPhoneNumbersOnly);
     }
 }
