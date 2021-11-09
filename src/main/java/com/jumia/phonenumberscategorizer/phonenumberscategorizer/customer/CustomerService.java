@@ -20,9 +20,11 @@ public class CustomerService {
     @Autowired
     private CustomerRepository repository;
 
-    public Iterable<Customer> getAll(Boolean validPhoneNumbersOnly) {
+    public Iterable<Customer> getAll(Boolean validPhoneNumbersOnly, String countryCode) {
         if(validPhoneNumbersOnly)
             return getValidPhoneNumbersOnly();
+        else if(countryCode != null && !countryCode.trim().isEmpty())
+            return getCustomersByCountryCode(countryCode);
         return repository.findAll();
 
     }
@@ -31,8 +33,22 @@ public class CustomerService {
         List<Customer> validCustomers = new ArrayList<>();
         for(Customer customer : repository.findAll()) {
             try {
-                CountryCodeEnum customerCountryCodeEnum = CountryHelper.getCountryFromPhone(customer.getPhone());
+                CountryCodeEnum customerCountryCodeEnum = CountryHelper.getCountryEnumFromPhone(customer.getPhone());
                 if(Pattern.compile(customerCountryCodeEnum.getRegex()).matcher(customer.getPhone()).find())
+                    validCustomers.add(customer);
+            }catch(CountryCodeNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return validCustomers;
+    }
+
+    private Iterable<Customer> getCustomersByCountryCode(String countryCode) {
+        List<Customer> validCustomers = new ArrayList<>();
+        for(Customer customer : repository.findAll()) {
+            try {
+                CountryCodeEnum customerCountryCodeEnum = CountryHelper.getCountryEnumFromPhone(customer.getPhone());
+                if(customerCountryCodeEnum.getCode().equals(countryCode))
                     validCustomers.add(customer);
             }catch(CountryCodeNotFoundException e) {
                 e.printStackTrace();

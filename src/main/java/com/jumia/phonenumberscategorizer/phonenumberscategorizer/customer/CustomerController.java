@@ -21,7 +21,8 @@ public class CustomerController {
     private CustomerService service;
 
     @GetMapping
-    public Iterable<Customer> getAll(@RequestParam(defaultValue = "false") Boolean validPhoneNumbersOnly) {
-        return service.getAll(validPhoneNumbersOnly);
+    public Iterable<Customer> getAll(@RequestParam(defaultValue = "false") Boolean validPhoneNumbersOnly,
+        @RequestParam(required = false) String countryCode) {
+        return service.getAll(validPhoneNumbersOnly, countryCode);
     }
 }

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class CountryHelper {
     private static final Pattern countryCodePattern = Pattern.compile("\\(([^)]+)\\)");
 
-    public static CountryCodeEnum getCountryFromPhone(String phoneNumber) throws CountryCodeNotFoundException {
+    public static CountryCodeEnum getCountryEnumFromPhone(String phoneNumber) throws CountryCodeNotFoundException {
         Matcher matcher = countryCodePattern.matcher(phoneNumber);
 
         if (!matcher.find()) {
