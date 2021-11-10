@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.util.NestedServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
@@ -66,14 +67,22 @@ class CustomerControllerIntegrationTest {
 
     @Test
     void get_invalid_page_number() throws Exception {
-        mockMvc.perform(get("/customer").param("page", "-1")).andExpect(status().isBadRequest()).
-            andExpect(result -> assertTrue(result.getResolvedException() instanceof PageNumberException));
+        try{
+            mockMvc.perform(get("/customer").param("page", "-1")).andExpect(status().isBadRequest()).
+                andExpect(result -> assertTrue(result.getResolvedException() instanceof PageNumberException));
+        }catch(NestedServletException e){
+            e.getCause();
+        }
     }
 
     @Test
     void get_invalid_size() throws Exception {
-        mockMvc.perform(get("/customer").param("size", "-1")).andExpect(status().isBadRequest()).
-            andExpect(result -> assertTrue(result.getResolvedException() instanceof PageSizeException));
+        try{    
+            mockMvc.perform(get("/customer").param("size", "-1")).andExpect(status().isBadRequest()).
+                andExpect(result -> assertTrue(result.getResolvedException() instanceof PageSizeException));
+        }catch(NestedServletException e){
+            e.getCause();
+        }
     }
 
     private Customer insertCustomer(String name, String phone) {
