@@ -9,6 +9,5 @@ public class CustomerDTO {
 
     private String name;
     private String phone;
-    private CountryCodeEnum countryCode;
-
+    
 }

@@ -7,12 +7,16 @@ import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.helper
 import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.Customer;
 import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.dtos.CountryCodeEnum;
 import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.dtos.CustomerDTO;
+import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.dtos.CustomerPageDTO;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -22,53 +26,74 @@ public class CustomerService {
     @Autowired
     private CustomerRepository repository;
 
-    public Iterable<Customer> getCustomers(Boolean validPhoneNumbersOnly, String countryName, String countryCode,
-        String localNumber) {
-        if(validPhoneNumbersOnly)
-            return getValidPhoneNumbersOnly();
-        else if(StringUtil.checkEmptyString(countryName))
-            return getCustomersByCountryName(countryName);
-        else if(StringUtil.checkEmptyString(countryCode) && StringUtil.checkEmptyString(localNumber))
-            return getCustomersByCountryCodeAndLocalNumber(countryCode, localNumber);
-        return repository.findAll();
+    public CustomerPageDTO getCustomers(Boolean validPhoneNumbersOnly, String countryName, String countryCode,
+        String localNumber, int page, int size) {
+            
+            Page<Customer> paginatedCustomers = repository.findAll(PageRequest.of(page, size));
+            List<Customer> filteredCustomers = paginatedCustomers.getContent();
+
+            if(validPhoneNumbersOnly) {
+                filteredCustomers = getValidPhoneNumbersOnly(filteredCustomers);
+            } else if(StringUtil.checkEmptyString(countryName))
+                filteredCustomers = getCustomersByCountryName(countryName, filteredCustomers);
+            else if(StringUtil.checkEmptyString(countryCode) && StringUtil.checkEmptyString(localNumber))
+                filteredCustomers = getCustomersByCountryCodeAndLocalNumber(countryCode, localNumber, filteredCustomers);
+            return convertToCustomerPageDTO(paginatedCustomers, filteredCustomers);
 
     }
 
-    private Iterable<Customer> getValidPhoneNumbersOnly() {
-        List<Customer> validCustomers = new ArrayList<>();
-        for(Customer customer : repository.findAll()) {
+    private List<Customer> getValidPhoneNumbersOnly(List<Customer> paginatedCustomers) {
+        List<Customer> validCustomerPhones = new ArrayList<>();
+        for(Customer customer : paginatedCustomers) {
             try {
                 CountryCodeEnum customerCountryCodeEnum = CountryHelper.getCountryEnumFromPhone(customer.getPhone());
                 if(Pattern.compile(customerCountryCodeEnum.getRegex()).matcher(customer.getPhone()).find())
-                    validCustomers.add(customer);
+                    validCustomerPhones.add(customer);
             }catch(CountryCodeNotFoundException e) {
                 e.printStackTrace();
             }
         }
-        return validCustomers;
+        return validCustomerPhones;
     }
 
-    private Iterable<Customer> getCustomersByCountryName(String countryName) {
-        List<Customer> validCustomers = new ArrayList<>();
-        for(Customer customer : repository.findAll()) {
+    private List<Customer> getCustomersByCountryName(String countryName, List<Customer> paginatedCustomers) {
+        List<Customer> countryFilteredCustomers = new ArrayList<>();
+        for(Customer customer : paginatedCustomers) {
             try {
                 CountryCodeEnum customerCountryCodeEnum = CountryHelper.getCountryEnumFromPhone(customer.getPhone());
                 if(customerCountryCodeEnum.name().equalsIgnoreCase(countryName))
-                    validCustomers.add(customer);
+                countryFilteredCustomers.add(customer);
             }catch(CountryCodeNotFoundException e) {
                 e.printStackTrace();
             }
         }
-        return validCustomers;
+        return countryFilteredCustomers;
     }
 
-    private Iterable<Customer> getCustomersByCountryCodeAndLocalNumber(String countryCode, String localPhoneNumber) {
-        List<Customer> validCustomers = new ArrayList<>();
-        String customerPhone = String.format("(%s) %s", countryCode, localPhoneNumber); 
-        for(Customer customer : repository.findAll()) {
-            if(customer.getPhone().equals(customerPhone))
-                validCustomers.add(customer);
-        }
-        return validCustomers;
+    private List<Customer> getCustomersByCountryCodeAndLocalNumber(String countryCode, String localPhoneNumber, 
+        List<Customer> paginatedCustomers) {
+            List<Customer> phoneFilteredCustomers = new ArrayList<>();
+            String customerPhone = String.format("(%s) %s", countryCode, localPhoneNumber);
+            for(Customer customer : paginatedCustomers) {
+                if(customer.getPhone().equals(customerPhone))
+                    phoneFilteredCustomers.add(customer);
+            }
+            return phoneFilteredCustomers;
+    }
+
+    private CustomerPageDTO convertToCustomerPageDTO(Page<Customer> customersPage, List<Customer> filteredCustomers) {
+        List<CustomerDTO> customers = filteredCustomers.stream().map(this::convertToCustomerDTO).collect(Collectors.toList());
+        return CustomerPageDTO.builder()
+                .customers(customers)
+                .pageSize(customersPage.getNumberOfElements())
+                .filteredPageSize(customers.size())
+                .totalPages(customersPage.getTotalPages()).build();
+    }
+    
+    private CustomerDTO convertToCustomerDTO(Customer customer) {
+        return CustomerDTO.builder()
+                .name(customer.getName())
+                .phone(customer.getPhone()).build();
+
     }
 }
