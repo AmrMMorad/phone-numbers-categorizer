@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +28,8 @@ public class CustomerService {
     @Autowired
     private CustomerRepository repository;
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public CustomerPageDTO getCustomers(Boolean validPhoneNumbersOnly, String countryName, String countryCode,
         String localNumber, int page, int size) {
             
@@ -33,11 +37,16 @@ public class CustomerService {
             List<Customer> filteredCustomers = paginatedCustomers.getContent();
 
             if(validPhoneNumbersOnly) {
+                logger.info("[CustomerService - getCustomers] Return valid Phone numbers only");
                 filteredCustomers = getValidPhoneNumbersOnly(filteredCustomers);
-            } else if(StringUtil.checkEmptyString(countryName))
+            } else if(StringUtil.checkEmptyString(countryName)) {
+                logger.info("[CustomerService - getCustomers] Country " + countryName + " is given");
                 filteredCustomers = getCustomersByCountryName(countryName, filteredCustomers);
-            else if(StringUtil.checkEmptyString(countryCode) && StringUtil.checkEmptyString(localNumber))
+            } else if(StringUtil.checkEmptyString(countryCode) && StringUtil.checkEmptyString(localNumber)) {
+                logger.info("[CustomerService - getCustomers] Country code " + countryCode + 
+                    " is given along with local number which is: " + localNumber);
                 filteredCustomers = getCustomersByCountryCodeAndLocalNumber(countryCode, localNumber, filteredCustomers);
+            }
             return convertToCustomerPageDTO(paginatedCustomers, filteredCustomers);
 
     }
@@ -50,7 +59,7 @@ public class CustomerService {
                 if(Pattern.compile(customerCountryCodeEnum.getRegex()).matcher(customer.getPhone()).find())
                     validCustomerPhones.add(customer);
             }catch(CountryCodeNotFoundException e) {
-                e.printStackTrace();
+                logger.error("Country Code is not found");
             }
         }
         return validCustomerPhones;
@@ -64,7 +73,7 @@ public class CustomerService {
                 if(customerCountryCodeEnum.name().equalsIgnoreCase(countryName))
                 countryFilteredCustomers.add(customer);
             }catch(CountryCodeNotFoundException e) {
-                e.printStackTrace();
+                logger.error("Country Code is not found");
             }
         }
         return countryFilteredCustomers;
@@ -74,6 +83,7 @@ public class CustomerService {
         List<Customer> paginatedCustomers) {
             List<Customer> phoneFilteredCustomers = new ArrayList<>();
             String customerPhone = String.format("(%s) %s", countryCode, localPhoneNumber);
+            logger.info("[CustomerService - getCustomersByCountryCodeAndLocalNumber] customer phone is: " + customerPhone);
             for(Customer customer : paginatedCustomers) {
                 if(customer.getPhone().equals(customerPhone))
                     phoneFilteredCustomers.add(customer);
