@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.PageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 @Service
 public class CustomerService {
@@ -32,17 +34,21 @@ public class CustomerService {
 
     public CustomerPageDTO getCustomers(Boolean validPhoneNumbersOnly, String countryName, String countryCode,
         String localNumber, int page, int size) {
-            
+
             Page<Customer> paginatedCustomers = repository.findAll(PageRequest.of(page, size));
             List<Customer> filteredCustomers = paginatedCustomers.getContent();
-
+            
             if(validPhoneNumbersOnly) {
                 logger.info("[CustomerService - getCustomers] Return valid Phone numbers only");
                 filteredCustomers = getValidPhoneNumbersOnly(filteredCustomers);
-            } else if(StringUtil.checkEmptyString(countryName)) {
+            } 
+            
+            if(StringUtil.checkEmptyString(countryName)) {
                 logger.info("[CustomerService - getCustomers] Country " + countryName + " is given");
                 filteredCustomers = getCustomersByCountryName(countryName, filteredCustomers);
-            } else if(StringUtil.checkEmptyString(countryCode) && StringUtil.checkEmptyString(localNumber)) {
+            } 
+            
+            if(StringUtil.checkEmptyString(countryCode) && StringUtil.checkEmptyString(localNumber)) {
                 logger.info("[CustomerService - getCustomers] Country code " + countryCode + 
                     " is given along with local number which is: " + localNumber);
                 filteredCustomers = getCustomersByCountryCodeAndLocalNumber(countryCode, localNumber, filteredCustomers);
