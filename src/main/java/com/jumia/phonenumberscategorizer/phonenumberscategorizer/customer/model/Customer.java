@@ -1,10 +1,10 @@
-package  com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model;
+package com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model;
 
 import javax.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
- 
+
 @Entity
 @Getter
 @Setter
@@ -18,5 +18,4 @@ public class Customer {
 
     @Column(length = 50)
     private String phone;
- 
 }

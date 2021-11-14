@@ -10,7 +10,7 @@ public class CountryHelper {
     private static final Pattern countryCodePattern = Pattern.compile("\\(([^)]+)\\)");
 
     public static CountryCodeEnum getCountryEnumFromPhone(String phoneNumber) throws CountryCodeNotFoundException {
-        if(phoneNumber == null) throw new CountryCodeNotFoundException();
+        if (phoneNumber == null) throw new CountryCodeNotFoundException();
 
         Matcher matcher = countryCodePattern.matcher(phoneNumber);
         if (!matcher.find()) {

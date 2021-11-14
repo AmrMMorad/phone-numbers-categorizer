@@ -4,10 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class CountryCodeNotFoundException extends RuntimeException {
+public class CountryNameNotFoundException extends RuntimeException {
 
-    public CountryCodeNotFoundException() {
-        super("Country Code Not Found");
+    public CountryNameNotFoundException() {
+        super("Country Name Not Found");
     }
 
 }

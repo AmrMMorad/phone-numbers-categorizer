@@ -12,8 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.jumia.phonenumberscategorizer.phonenumberscategorizer.exception.PageNumberException;
-import com.jumia.phonenumberscategorizer.phonenumberscategorizer.exception.PageSizeException;
+
 import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.Customer;
 import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.model.dtos.CustomerPageDTO;
 import com.jumia.phonenumberscategorizer.phonenumberscategorizer.customer.repo.CustomerRepository;
@@ -27,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class CustomerControllerIntegrationTest {
 
-	@Autowired
+    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
@@ -41,9 +40,9 @@ class CustomerControllerIntegrationTest {
         repository.deleteAll();
     }
 
-	@Test
+    @Test
     void get_customers_success() throws Exception {
-        
+
         MvcResult result = mockMvc.perform(get("/customer")).andExpect(status().isOk()).andReturn();
 
         CustomerPageDTO pageDTO = objectMapper.readValue(result.getResponse().getContentAsString(), CustomerPageDTO.class);
@@ -57,7 +56,7 @@ class CustomerControllerIntegrationTest {
     void get_invalid_country() throws Exception {
 
         MvcResult result = mockMvc.perform(get("/customer").param("country", "no country")).andExpect(status().isOk()).andReturn();
-        
+
         CustomerPageDTO pageDTO = objectMapper.readValue(result.getResponse().getContentAsString(), CustomerPageDTO.class);
         assertThat(pageDTO.getCustomers().size()).isEqualTo(0);
         assertThat(pageDTO.getTotalPages()).isEqualTo(0);
@@ -67,20 +66,27 @@ class CustomerControllerIntegrationTest {
 
     @Test
     void get_invalid_page_number() throws Exception {
-        try{
-            mockMvc.perform(get("/customer").param("page", "-1")).andExpect(status().isBadRequest()).
-                andExpect(result -> assertTrue(result.getResolvedException() instanceof PageNumberException));
-        }catch(NestedServletException e){
+        try {
+            mockMvc.perform(get("/customer").param("page", "-1")).andExpect(status().isBadRequest());
+        } catch (NestedServletException e) {
             e.getCause();
         }
     }
 
     @Test
     void get_invalid_size() throws Exception {
-        try{    
-            mockMvc.perform(get("/customer").param("size", "-1")).andExpect(status().isBadRequest()).
-                andExpect(result -> assertTrue(result.getResolvedException() instanceof PageSizeException));
-        }catch(NestedServletException e){
+        try {
+            mockMvc.perform(get("/customer").param("size", "-1")).andExpect(status().isBadRequest());
+        } catch (NestedServletException e) {
+            e.getCause();
+        }
+    }
+
+    @Test
+    void get_invalid_country_name() throws Exception {
+        try {
+            mockMvc.perform(get("/customer").param("countryName", "moro")).andExpect(status().isBadRequest());
+        } catch (NestedServletException e) {
             e.getCause();
         }
     }
@@ -93,6 +99,6 @@ class CustomerControllerIntegrationTest {
     }
 
 
-	
+
 
 }

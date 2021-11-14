@@ -15,9 +15,9 @@ public class Swagger {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.jumia.phonenumberscategorizer.phonenumberscategorizer"))
-                .paths(PathSelectors.any())
-                .build();
+            .select()
+            .apis(RequestHandlerSelectors.basePackage("com.jumia.phonenumberscategorizer.phonenumberscategorizer"))
+            .paths(PathSelectors.any())
+            .build();
     }
 }
