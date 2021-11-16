@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import javax.validation.constraints.Min;
 import javax.validation.Valid;
@@ -33,7 +34,7 @@ public class CustomerController {
 
     @GetMapping
     @ApiOperation("Get all customers")
-
+    @CrossOrigin
     public CustomerPageDTO getAll(@RequestParam(defaultValue = "false") Boolean validPhoneNumbersOnly,
         @RequestParam(required = false) @NotBlankIfPresent String countryName,
         @RequestParam(required = false) @NotBlankIfPresent String countryCode,
