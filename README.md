@@ -3,7 +3,7 @@ A spring boot project for phone numbers categorization
 ### How to install (using docker container)
 1. To build docker image with maven (including running all tests), run ./mvnw spring-boot:build-image
 2. To build using normal docker command:
-	docker build -t jumia/phone-categorizer-docker .
+	docker build -t jumia/phone-categorizer-docker .\
 	docker run -p 8080:8080 jumia/phone-categorizer-docker
 
 After that, open the browser and take and type  the endpoint: http://localhost:8080/api/swagger-ui/
